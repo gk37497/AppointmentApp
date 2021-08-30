@@ -38,7 +38,7 @@ public class DentistService {
                 dentistRepository.save(dentist);
                 return "added ";
             }else {
-                return " dentist already exists .";
+                return " dentist already exist.";
             }
         }catch (Exception e) {
             throw e;
