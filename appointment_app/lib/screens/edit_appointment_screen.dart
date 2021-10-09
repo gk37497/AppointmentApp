@@ -1,10 +1,13 @@
-import 'package:appointment_app/models/dentist.dart';
 import 'package:appointment_app/models/order.dart';
-import 'package:appointment_app/models/type.dart';
+import 'package:appointment_app/providers/dentistProvider.dart';
+import 'package:appointment_app/providers/orderProvider.dart';
+import 'package:appointment_app/providers/typeProvider.dart';
+import 'package:appointment_app/untilities/getOrderData.dart';
 import 'package:appointment_app/widgets/dateTimePicker.dart';
 import 'package:appointment_app/widgets/roundedBoxDecoration.dart';
 import 'package:appointment_app/widgets/roundedButton.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class EditAppointment extends StatefulWidget {
@@ -16,31 +19,50 @@ class EditAppointment extends StatefulWidget {
 }
 
 class _EditAppointmentState extends State<EditAppointment> {
-  List<DropdownMenuItem<String>> _dentistDropItems = dentistsData
-      .map((e) => DropdownMenuItem<String>(
-            child: Text(e.firstName),
-            value: e.firstName,
-          ))
-      .toList();
-  List<DropdownMenuItem<String>> _typeDropItems = appointmentTypesData
-      .map((e) => DropdownMenuItem<String>(
-            child: Text(e.name),
-            value: e.name,
-          ))
-      .toList();
+  DateTime _selectedDate = DateTime.now();
+  final CalendarController _calendarController = CalendarController();
+
+//dropdown button utguud hadgalah heseg
+  String _dentistDropdownInitialValue = '';
+  String _typeDropdownInitialValue = '';
+
+  int _dId = 0;
+
+  @override
+  void initState() {
+    final typeMdl = Provider.of<TypesProvider>(context, listen: false);
+    final dentistMdl = Provider.of<DentistProvider>(context, listen: false);
+    super.initState();
+    typeMdl.getTypesData();
+    _dentistDropdownInitialValue = dentistMdl.dentistsData
+        .firstWhere((element) => element.dId == widget.order.dId)
+        .firstName;
+    _typeDropdownInitialValue = typeMdl.orderTypesData
+        .firstWhere((element) => element.tId == widget.order.tId)
+        .typeName;
+    _dId = widget.order.dId;
+  }
 
   @override
   Widget build(BuildContext context) {
-    String _dentistDropdownValue = dentistsData
-        .firstWhere((element) => element.dId == widget.order.dId)
-        .firstName;
-    String _typeDropdownValue = appointmentTypesData
-        .firstWhere((element) => element.name == widget.order.type)
-        .name;
+    final dentistMdl = Provider.of<DentistProvider>(context);
+    final typeMdl = Provider.of<TypesProvider>(context);
+    final orderMdl = Provider.of<OrderProvider>(context);
+
+    List<DropdownMenuItem<String>> _dentistDropItems = dentistMdl.dentistsData
+        .map((e) => DropdownMenuItem<String>(
+              child: Text(e.firstName),
+              value: e.firstName,
+            ))
+        .toList();
+    List<DropdownMenuItem<String>> _typeDropItems = typeMdl.orderTypesData
+        .map((e) => DropdownMenuItem<String>(
+              child: Text(e.typeName),
+              value: e.typeName,
+            ))
+        .toList();
 
     Size size = MediaQuery.of(context).size;
-    DateTime _selectedDate = widget.order.startDate;
-    CalendarController _calendarController = CalendarController();
 
     return Scaffold(
       appBar: AppBar(
@@ -65,29 +87,35 @@ class _EditAppointmentState extends State<EditAppointment> {
                   Container(
                     decoration: roundedBoxDecoration(Colors.white),
                     child: DropdownButton<String>(
-                      value: _dentistDropdownValue,
+                      value: _dentistDropdownInitialValue,
                       items: _dentistDropItems,
                       underline: Container(
                         height: 0,
                       ),
                       onChanged: (String? newValue) {
                         setState(() {
-                          _dentistDropdownValue = newValue!;
+                          _dentistDropdownInitialValue = newValue!;
+                          _dId = dentistMdl.dentistsData
+                              .firstWhere((element) =>
+                                  element.firstName ==
+                                  _dentistDropdownInitialValue)
+                              .dId;
                         });
+                        print(_dId);
                       },
                     ),
                   ),
                   Container(
                     decoration: roundedBoxDecoration(Colors.white),
                     child: DropdownButton<String>(
-                      value: _typeDropdownValue,
+                      value: _typeDropdownInitialValue,
                       items: _typeDropItems,
                       underline: Container(
                         height: 0,
                       ),
                       onChanged: (String? newValue) {
                         setState(() {
-                          _typeDropdownValue = newValue!;
+                          _typeDropdownInitialValue = newValue!;
                         });
                       },
                     ),
@@ -103,7 +131,7 @@ class _EditAppointmentState extends State<EditAppointment> {
                 _calendarController,
                 onDateChanged,
                 onSelectionChanged,
-                ordersData,
+                getOrderData(_dId, context),
               ),
             ),
             Container(
@@ -112,8 +140,44 @@ class _EditAppointmentState extends State<EditAppointment> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   roundedButton(
-                      "Close", Colors.white, Colors.blue, size, () {}),
-                  roundedButton("Edit", Colors.blue, Colors.white, size, () {}),
+                    "Close",
+                    Colors.white,
+                    Colors.blue,
+                    size,
+                    closeBtnHandler,
+                  ),
+                  roundedButton(
+                    "Edit",
+                    Colors.blue,
+                    Colors.white,
+                    size,
+                    () {
+                      Order editingOrder = new Order(
+                        dId: _dId,
+                        oId: widget.order.oId,
+                        tId: typeMdl.orderTypesData
+                            .firstWhere(
+                                (e) => e.typeName == _typeDropdownInitialValue)
+                            .tId,
+                        consumerName: widget.order.consumerName,
+                        startDate: _selectedDate,
+                        endDate: _selectedDate.add(
+                          Duration(
+                              minutes: _typeDropdownInitialValue == ""
+                                  ? 0
+                                  : typeMdl.orderTypesData
+                                      .firstWhere((element) =>
+                                          element.typeName ==
+                                          _typeDropdownInitialValue)
+                                      .duration),
+                        ),
+                        isDone: 0,
+                      );
+                      print(editingOrder.toJson());
+                      orderMdl.updateOrder(editingOrder, context);
+                      Navigator.pop(context);
+                    },
+                  ),
                 ],
               ),
             )
@@ -123,6 +187,30 @@ class _EditAppointmentState extends State<EditAppointment> {
     );
   }
 
-  void onDateChanged(DateTime date) {}
-  void onSelectionChanged(CalendarSelectionDetails details) {}
+  void closeBtnHandler() {
+    Navigator.pop(context);
+  }
+
+  void editBtnHandler() {
+    print(_selectedDate);
+  }
+
+  void onDateChanged(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+    });
+
+    _calendarController.displayDate = _selectedDate;
+  }
+
+  void onSelectionChanged(CalendarSelectionDetails details) {
+    Future.delayed(
+      Duration(milliseconds: 1),
+      () => setState(
+        () {
+          _selectedDate = details.date!;
+        },
+      ),
+    );
+  }
 }

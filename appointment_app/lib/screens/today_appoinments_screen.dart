@@ -1,10 +1,14 @@
-import 'package:appointment_app/models/dentist.dart';
 import 'package:appointment_app/models/order.dart';
+import 'package:appointment_app/providers/dentistProvider.dart';
+import 'package:appointment_app/providers/orderProvider.dart';
+import 'package:appointment_app/providers/typeProvider.dart';
+import 'package:appointment_app/untilities/constants.dart';
+import 'package:appointment_app/widgets/noOrder.dart';
 import 'package:appointment_app/widgets/screenHeader.dart';
 import 'package:flutter/material.dart';
 import 'package:appointment_app/widgets/roundedButton.dart';
 import 'package:intl/intl.dart';
-
+import 'package:provider/provider.dart';
 import 'edit_appointment_screen.dart';
 
 class TodayAppointments extends StatefulWidget {
@@ -18,25 +22,32 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
   bool _pendingBtnClicked = true;
   bool _finishedBtnClicked = false;
 
-  //YG unuudriinhiig avdag bolgo
-  List<Order> _pendingAppointments = ordersData
-      .where(
-        (element) =>
-            !element.isDone &&
-            element.startDate.day.compareTo(DateTime.now().day) == 0,
-      )
-      .toList();
-  List<Order> _finishedAppointments = ordersData
-      .where(
-        (element) =>
-            element.isDone &&
-            element.startDate.day.compareTo(DateTime.now().day) == 0,
-      )
-      .toList();
+  @override
+  void initState() {
+    final orderMdl = Provider.of<OrderProvider>(context, listen: false);
+    final typeMdl = Provider.of<TypesProvider>(context, listen: false);
+    final dentistMdl = Provider.of<DentistProvider>(context, listen: false);
+    super.initState();
+    orderMdl.getOrdersData();
+    typeMdl.getTypesData();
+    dentistMdl.getDentistsData();
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
+    final orderMdl = Provider.of<OrderProvider>(context);
+
+    List<Order> _todayOrders =
+        orderMdl.ordersData.where((e) => isToday(e.startDate)).toList();
+    //Yg unuudriin orderuudiig haruuldag bolgoh
+    List<Order> _pendingOrders =
+        _todayOrders.where((e) => e.isDone == 0).toList();
+
+    List<Order> _finishedOrders =
+        _todayOrders.where((e) => e.isDone == 1).toList();
+
     //Today appointments list view
     Container pageBody(Size size, List<Order> data) {
       return data.length > 0
@@ -57,7 +68,7 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
                           Text(data[i].consumerName,
                               style: TextStyle(fontWeight: FontWeight.w700)),
                           SizedBox(width: 10),
-                          Text("Эмч:" + getDentistName(data[i].dId)),
+                          Text(getDentistName(data[i].dId)),
                         ],
                       ),
                       subtitle: Text(
@@ -65,7 +76,7 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
                             " - " +
                             DateFormat('HH.mm').format(data[i].endDate) +
                             " (" +
-                            data[i].type +
+                            data[i].tId.toString() +
                             ")",
                       ),
                       dense: true,
@@ -86,20 +97,7 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
                 },
               ),
             ))
-          : Container(
-              height: size.height * 0.67,
-              child: Center(
-                child: Text(
-                  _pendingBtnClicked
-                      ? "No pending appointment."
-                      : "No finished appointment.",
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            );
+          : noOrder(size, _pendingBtnClicked);
     }
 
     //Buttons
@@ -108,14 +106,14 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           roundedButton(
-            "Pending",
+            todayScreenStr1,
             _pendingBtnClicked ? Colors.blue : Colors.white,
             _pendingBtnClicked ? Colors.white : Colors.blue,
             size,
             pendingBtnHandler,
           ),
           roundedButton(
-            "Finished",
+            todayScreenStr2,
             _finishedBtnClicked ? Colors.blue : Colors.white,
             _finishedBtnClicked ? Colors.white : Colors.blue,
             size,
@@ -133,16 +131,16 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             header(
-              "Өнөөдрийн хуваарь",
+              todayScreenTitle,
               _pendingBtnClicked
-                  ? " Pending appointment ${_pendingAppointments.length}"
-                  : " Finished appointment ${_finishedAppointments.length}",
+                  ? "$todayScreenStr1 ${_pendingOrders.length}"
+                  : " $todayScreenStr2 ${_finishedOrders.length}",
             ),
             buttonBar(size),
             SizedBox(height: 10),
             pageBody(
               size,
-              _pendingBtnClicked ? _pendingAppointments : _finishedAppointments,
+              _pendingBtnClicked ? _pendingOrders : _finishedOrders,
             ),
           ],
         ),
@@ -164,7 +162,21 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
     });
   }
 
-  String getDentistName(String dId) {
-    return dentistsData.firstWhere((element) => element.dId == dId).firstName;
+  String getDentistName(int dId) {
+    final dentistMdl = Provider.of<DentistProvider>(context);
+    return dentistMdl.dentistsData
+        .firstWhere((element) => element.dId == dId)
+        .firstName;
+  }
+
+  bool isToday(DateTime date) {
+    DateTime now = DateTime.now();
+    int result = DateTime(date.year, date.month, date.day)
+        .difference(DateTime(now.year, now.month, now.day))
+        .inDays;
+    if (result == 0) {
+      return true;
+    }
+    return false;
   }
 }

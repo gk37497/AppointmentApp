@@ -1,9 +1,10 @@
 import 'package:appointment_app/models/order.dart';
+import 'package:appointment_app/providers/orderProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class AppointmentSearch extends SearchDelegate<Order> {
-  final List<Order> data = ordersData;
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -22,13 +23,13 @@ class AppointmentSearch extends SearchDelegate<Order> {
         close(
           context,
           Order(
-              dId: "",
-              aId: "",
+              dId: 0,
+              oId: 11,
               consumerName: "",
               startDate: DateTime.now(),
               endDate: DateTime.now(),
-              type: "",
-              isDone: false),
+              isDone: 0,
+              tId: 23),
         );
       },
       icon: AnimatedIcon(
@@ -40,12 +41,13 @@ class AppointmentSearch extends SearchDelegate<Order> {
 
   @override
   Widget buildResults(BuildContext context) {
-    // TODO: implement buildResults
     throw UnimplementedError();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    final orderMdl = Provider.of<OrderProvider>(context);
+    final List<Order> data = orderMdl.ordersData;
     Size size = MediaQuery.of(context).size;
 
     final List<Order> suggestionsList = query.isEmpty
@@ -84,7 +86,7 @@ Container searchBody(Size size, List<Order> data) {
                   "-" +
                   DateFormat('HH.mm').format(data[i].endDate) +
                   " (" +
-                  data[i].type +
+                  data[i].tId.toString() +
                   ")",
             ),
             dense: true,

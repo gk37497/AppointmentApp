@@ -1,9 +1,16 @@
 import 'package:appointment_app/models/order.dart';
+import 'package:appointment_app/providers/dentistProvider.dart';
+import 'package:appointment_app/providers/orderProvider.dart';
+import 'package:appointment_app/providers/typeProvider.dart';
+import 'package:appointment_app/screens/screenTemplate.dart';
 import 'package:appointment_app/screens/search_screen.dart';
+import 'package:appointment_app/untilities/constants.dart';
+import 'package:appointment_app/widgets/noOrder.dart';
 import 'package:appointment_app/widgets/screenHeader.dart';
 import 'package:appointment_app/widgets/roundedButton.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class AppointmentsPage extends StatefulWidget {
   const AppointmentsPage({Key? key}) : super(key: key);
@@ -16,25 +23,28 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   bool _upcomingBtnClicked = true;
   bool _pastBtnClicked = false;
 
-  List<Order> _upcomingAppointments =
-      ordersData.where((element) => !element.isDone).toList();
-  List<Order> _pastAppointments =
-      ordersData.where((element) => element.isDone).toList();
-
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
+    final orderMdl = Provider.of<OrderProvider>(context);
+    final dentistMdl = Provider.of<DentistProvider>(context);
+    final typesMdl = Provider.of<TypesProvider>(context);
 
+    List<Order> _upcomingAppointments =
+        orderMdl.ordersData.where((element) => element.isDone == 0).toList();
+    List<Order> _pastAppointments =
+        orderMdl.ordersData.where((element) => element.isDone == 1).toList();
+
+    Size size = MediaQuery.of(context).size;
     //Page header
     Row pageHeader() {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           header(
-            "All appointments",
+            allOrdersScreenTitle,
             _upcomingBtnClicked
-                ? " Upcoming appointment ${_upcomingAppointments.length}"
-                : " Completed appointment ${_pastAppointments.length}",
+                ? allOrderStr1 + " ${_upcomingAppointments.length}"
+                : allOrderStr2 + " ${_pastAppointments.length}",
           ),
           IconButton(
               onPressed: () async {
@@ -49,7 +59,6 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       );
     }
 
-    //All appointment page body
     Container pageBody(Size size, List<Order> data) {
       return data.length > 0
           ? (Container(
@@ -61,47 +70,45 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                 itemBuilder: (context, i) {
                   return Card(
                     child: ListTile(
-                      leading: IconButton(
-                        icon: Icon(Icons.radio_button_unchecked),
-                        onPressed: () {},
-                      ),
+                      // leading: IconButton(
+                      //   icon: Icon(Icons.radio_button_unchecked),
+                      //   onPressed: () {},
+                      // ),
                       title: Row(
                         children: [
                           Text(data[i].consumerName,
                               style: TextStyle(fontWeight: FontWeight.w700)),
                           SizedBox(width: 10),
-                          Text("Dentist: Khulan")
+                          Text(dentistMdl.dentistsData
+                              .firstWhere((e) => e.dId == data[i].dId)
+                              .firstName),
                         ],
                       ),
                       subtitle: Text(
-                        DateFormat('HH.mm').format(data[i].startDate) +
+                        dateConvert(data[i].startDate) +
                             "-" +
-                            DateFormat('HH.mm').format(data[i].endDate) +
+                            dateConvert(data[i].endDate) +
                             " (" +
-                            data[i].type +
+                            typesMdl.orderTypesData
+                                .firstWhere((e) => e.tId == data[i].tId)
+                                .typeName +
                             ")",
                       ),
                       dense: true,
-                      trailing: Icon(Icons.edit),
+                      trailing: IconButton(
+                        onPressed: () {
+                          deleteBtnHandler(
+                            data[i],
+                          );
+                        },
+                        icon: Icon(Icons.delete),
+                      ),
                     ),
                   );
                 },
               ),
             ))
-          : Container(
-              height: size.height * 0.68,
-              child: Center(
-                child: Text(
-                  _upcomingBtnClicked
-                      ? "No upComing appointment."
-                      : "No completed appointment.",
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            );
+          : noOrder(size, _upcomingBtnClicked);
     }
 
     Row buttonBar(Size size) {
@@ -109,14 +116,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           roundedButton(
-            "Upcoming",
+            allOrderStr1,
             _upcomingBtnClicked ? Colors.blue : Colors.white,
             _upcomingBtnClicked ? Colors.white : Colors.blue,
             size,
             upcomingBtnHandler,
           ),
           roundedButton(
-            "Completed",
+            allOrderStr2,
             _pastBtnClicked ? Colors.blue : Colors.white,
             _pastBtnClicked ? Colors.white : Colors.blue,
             size,
@@ -126,25 +133,19 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       );
     }
 
-    return Scaffold(
-      body: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              child: pageHeader(),
-              height: size.height * 0.14,
-            ),
-            buttonBar(size),
-            pageBody(
+    return pageTemplate([
+      Container(
+        child: pageHeader(),
+        height: size.height * 0.14,
+      ),
+      buttonBar(size),
+      !orderMdl.loading
+          ? pageBody(
               size,
               _upcomingBtnClicked ? _upcomingAppointments : _pastAppointments,
-            ),
-          ],
-        ),
-      ),
-    );
+            )
+          : Container(child: Center(child: CircularProgressIndicator())),
+    ]);
   }
 
   void upcomingBtnHandler() {
@@ -159,5 +160,39 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       _upcomingBtnClicked = false;
       _pastBtnClicked = true;
     });
+  }
+
+  void deleteBtnHandler(Order order) {
+    final orderMdl = Provider.of<OrderProvider>(context, listen: false);
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text("Захиалга устгах"),
+          content: Text(deleteAlertQs),
+          actions: [
+            TextButton(
+              onPressed: () {
+                orderMdl.deleteOrder(order, context);
+                Navigator.pop(context);
+              },
+              child: Text("Тийм"),
+            ),
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  "Үгүй",
+                  style: TextStyle(color: Colors.red),
+                )),
+          ],
+        );
+      },
+    );
+  }
+
+  String dateConvert(DateTime date) {
+    return DateFormat('HH.mm').format(date);
   }
 }

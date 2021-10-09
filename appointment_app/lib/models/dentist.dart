@@ -1,44 +1,39 @@
-class Dentist {
-  final String dId;
-  final String firstName;
-  final String lastName;
-  final int phoneNumber;
+import 'dart:convert';
 
+class Dentist {
+  int dId;
+  String firstName;
+  String lastName;
+  int userID;
+  
   Dentist({
     required this.dId,
     required this.firstName,
     required this.lastName,
-    required this.phoneNumber,
+    required this.userID,
   });
-}
 
-List<Dentist> dentistsData = [
-  Dentist(
-    firstName: "Bat",
-    lastName: "Bold",
-    phoneNumber: 88119922,
-    dId: 'd100',
-  ),
-  Dentist(
-      firstName: "Solongo",
-      lastName: "Jav",
-      phoneNumber: 88119922,
-      dId: 'd101'),
-  Dentist(
-      firstName: "Nomin",
-      lastName: "Tsengel",
-      phoneNumber: 88119922,
-      dId: 'd102'),
-  Dentist(
-    firstName: "Goo",
-    lastName: "Hurel",
-    phoneNumber: 88119922,
-    dId: 'd103',
-  ),
-  Dentist(
-    firstName: "Oyuka",
-    lastName: "Sukh",
-    phoneNumber: 88119922,
-    dId: 'd104',
-  ),
-];
+  
+
+  Map<String, dynamic> toMap() {
+    return {
+      'dId': dId,
+      'firstName': firstName,
+      'lastName': lastName,
+      'userID': userID,
+    };
+  }
+
+  factory Dentist.fromMap(Map<String, dynamic> map) {
+    return Dentist(
+      dId: map['dId'],
+      firstName: map['firstName'],
+      lastName: map['lastName'],
+      userID: map['userID'],
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory Dentist.fromJson(String source) => Dentist.fromMap(json.decode(source));
+}

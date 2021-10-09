@@ -7,13 +7,11 @@ import javax.persistence.Id;
 
 @Entity
 public class DentistEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     public int id;
     public String firstName;
     public String lastName;
-    public int phoneNumber;
 
     public DentistEntity() {
     }
@@ -42,11 +40,4 @@ public class DentistEntity {
         this.lastName = lastName;
     }
 
-    public int getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(int phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
 }

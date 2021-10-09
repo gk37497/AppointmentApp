@@ -1,13 +1,21 @@
-import 'package:appointment_app/models/dentist.dart';
+import 'package:appointment_app/database/getDataFrom.dart';
 import 'package:appointment_app/models/order.dart';
-import 'package:appointment_app/models/type.dart';
+import 'package:appointment_app/providers/dentistProvider.dart';
+import 'package:appointment_app/providers/orderProvider.dart';
+import 'package:appointment_app/providers/typeProvider.dart';
+import 'package:appointment_app/screens/screenTemplate.dart';
+import 'package:appointment_app/untilities/constants.dart';
+import 'package:appointment_app/untilities/getOrderData.dart';
 import 'package:appointment_app/widgets/dateTimePicker.dart';
 import 'package:appointment_app/widgets/screenHeader.dart';
 import 'package:appointment_app/widgets/roundedBoxDecoration.dart';
 import 'package:appointment_app/widgets/roundedButton.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+
+import 'dentist_calendar.dart';
 
 class NewAppointment extends StatefulWidget {
   final jumpTo;
@@ -18,12 +26,13 @@ class NewAppointment extends StatefulWidget {
 }
 
 class _NewAppointmentState extends State<NewAppointment> {
-  String dId = "";
+  int chosenDentistId = 0;
   String chosenTypeName = "";
   DateTime _selectedDate = DateTime.now();
   int _page = 0;
 
-  List<int> isClicked = List<int>.generate(5, (index) => 0);
+  List<int> isTypeClicked = List<int>.generate(5, (index) => 0);
+  List<int> isDentistClicked = List<int>.generate(5, (index) => 0);
 
   final PageController _pageController = new PageController();
   final CalendarController _calendarController = CalendarController();
@@ -32,103 +41,182 @@ class _NewAppointmentState extends State<NewAppointment> {
 
   @override
   Widget build(BuildContext context) {
+    final dentistMdl = Provider.of<DentistProvider>(context);
+    final orderMdl = Provider.of<OrderProvider>(context);
+    final typeMdl = Provider.of<TypesProvider>(context);
+
     Size size = MediaQuery.of(context).size;
-    String _dentistName = dId == ""
+    String _dentistName = (chosenDentistId == 0
         ? " "
-        : dentistsData.firstWhere((element) => element.dId == dId).firstName;
+        : dentistMdl.dentistsData
+            .firstWhere((element) => element.dId == chosenDentistId)
+            .firstName);
     String _chosenTypeName = chosenTypeName == "" ? " " : chosenTypeName;
     DateTime _endDate = _selectedDate.add(
       Duration(
-          minutes: chosenTypeName == ""
-              ? 0
-              : appointmentTypesData
-                  .firstWhere((element) => element.name == chosenTypeName)
-                  .duration),
+        minutes: chosenTypeName == ""
+            ? 0
+            : typeMdl.orderTypesData
+                .firstWhere((element) => element.typeName == chosenTypeName)
+                .duration,
+      ),
     );
     //Show list
     Container chooseDentistSection() {
       return Container(
-        // decoration: roundedBoxDecoration(Colors.white),
-        child: ListView.builder(
-            itemCount: dentistsData.length,
-            itemBuilder: (context, i) {
-              return Card(
-                child: ListTile(
-                  leading: Radio(
-                    value: dentistsData[i].dId,
-                    groupValue: dId,
-                    onChanged: (String? value) {
-                      setState(() {
-                        dId = value!;
-                      });
-                      print(dId);
-                    },
-                  ),
-                  title: Text(dentistsData[i].lastName +
-                      " " +
-                      dentistsData[i].firstName),
-                  subtitle: Text(dentistsData[i].phoneNumber.toString()),
-                  trailing: IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.calendar_today_rounded)),
+        child: dentistMdl.loading
+            ? (Container(
+                child: Center(child: CircularProgressIndicator()),
+              ))
+            : GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
                 ),
-              );
-            }),
+                itemCount: dentistMdl.dentistsData.length,
+                itemBuilder: (context, i) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1, color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        chosenDentistId = dentistMdl.dentistsData[i].dId;
+                        setState(() {
+                          isDentistClicked =
+                              isDentistClicked.map((e) => e = 0).toList();
+                          isDentistClicked[i] = 1;
+                        });
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.blue[100],
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DentistCalendar(
+                                          dentistMdl.dentistsData[i]),
+                                    ),
+                                  );
+                                },
+                                icon: Icon(
+                                  Icons.calendar_today_rounded,
+                                  color: isDentistClicked[i] == 1
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            dentistMdl.dentistsData[i].firstName,
+                            style: TextStyle(
+                              color: isDentistClicked[i] == 1
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          )
+                        ],
+                      ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          isDentistClicked[i] == 1
+                              ? Colors.blue
+                              : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
       );
     }
 
     Container chooseTypeSection() {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-          ),
-          itemCount: appointmentTypesData.length,
-          itemBuilder: (BuildContext context, int i) {
-            return Container(
-              decoration: BoxDecoration(
-                border: Border.all(width: 1, color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    isClicked = isClicked.map((e) => e = 0).toList();
-                    isClicked[i] = 1;
-                    chosenTypeName = appointmentTypesData[i].name;
-                  });
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.clean_hands,
-                      color: isClicked[i] == 1
-                          ? Colors.white
-                          : Colors.blue.shade400,
+        child: FutureBuilder(
+            future: getTypesFromDb(),
+            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+              if (!snapshot.hasData) {
+                return Container(child: Center(child: Icon(Icons.error)));
+              }
+              return (GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: snapshot.data.length,
+                itemBuilder: (BuildContext context, int i) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1, color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    SizedBox(height: 5),
-                    Text(
-                      appointmentTypesData[i].name,
-                      style: TextStyle(
-                        color: isClicked[i] == 1 ? Colors.white : Colors.black,
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          isTypeClicked =
+                              isTypeClicked.map((e) => e = 0).toList();
+                          isTypeClicked[i] = 1;
+                          chosenTypeName = snapshot.data[i].typeName;
+                        });
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.clean_hands,
+                            color: isTypeClicked[i] == 1
+                                ? Colors.white
+                                : Colors.blue.shade400,
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            snapshot.data[i].typeName,
+                            style: TextStyle(
+                              color: isTypeClicked[i] == 1
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                          Text(
+                            "${snapshot.data[i].duration.toString()} min",
+                            style: TextStyle(
+                              color: isTypeClicked[i] == 1
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                        ],
                       ),
-                    )
-                  ],
-                ),
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(
-                    isClicked[i] == 1 ? Colors.blue : Colors.transparent,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          isTypeClicked[i] == 1
+                              ? Colors.blue
+                              : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ));
+            }),
       );
     }
 
@@ -198,63 +286,70 @@ class _NewAppointmentState extends State<NewAppointment> {
       );
     }
 
-    return Scaffold(
-      body: Container(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              header(
-                "Add new appointment",
-                "${dId == "" ? "" : _dentistName} ${chosenTypeName == "" ? "" : "$chosenTypeName"}",
+    Container pageBody(
+        Container chooseDentistSection(),
+        Container chooseTypeSection(),
+        OrderProvider orderMdl,
+        Container verifyAppointment()) {
+      return Container(
+        child: PageView(
+          children: [
+            Container(
+              // decoration: roundedBoxDecoration(Colors.white),
+              child: chooseDentistSection(),
+            ),
+            Container(
+              decoration: roundedBoxDecoration(Colors.white),
+              child: chooseTypeSection(),
+            ),
+            Container(
+              decoration: roundedBoxDecoration(Colors.white),
+              child: chooseDateSection(
+                _selectedDate,
+                _calendarController,
+                _onDateChanged,
+                _onSelectionChanged,
+                getOrderData(chosenDentistId, context),
               ),
-              SizedBox(
-                height: size.height * 0.64,
-                child: PageView(
-                  children: [
-                    Container(
-                      // decoration: roundedBoxDecoration(Colors.white),
-                      child: chooseDentistSection(),
-                    ),
-                    Container(
-                      decoration: roundedBoxDecoration(Colors.white),
-                      child: chooseTypeSection(),
-                    ),
-                    Container(
-                      decoration: roundedBoxDecoration(Colors.white),
-                      child: chooseDateSection(
-                          _selectedDate,
-                          _calendarController,
-                          _onDateChanged,
-                          _onSelectionChanged,
-                          ordersData),
-                    ),
-                    Card(
-                      child: verifyAppointment(),
-                    ),
-                  ],
-                  controller: _pageController,
-                  physics: NeverScrollableScrollPhysics(),
-                  onPageChanged: _onPageChanged,
-                ),
-              ),
-              SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  roundedButton(
-                      "Back", Colors.white, Colors.blue, size, backBtnHandler),
-                  roundedButton(
-                    "${_page == 3 ? "Confirm" : "Next"}",
-                    Colors.blue,
-                    Colors.white,
-                    size,
-                    _page == 3 ? confirmBtnHandler : nextBtnHandler,
-                  ),
-                ],
-              ),
-            ],
-          )),
+            ),
+            Card(
+              child: verifyAppointment(),
+            ),
+          ],
+          controller: _pageController,
+          physics: NeverScrollableScrollPhysics(),
+          onPageChanged: _onPageChanged,
+        ),
+      );
+    }
+
+    return pageTemplate(
+      [
+        header(
+          addOrderScreenTitle,
+          "${chosenDentistId == 0 ? "" : _dentistName} ${chosenTypeName == "" ? "" : "$chosenTypeName"}",
+        ),
+        SizedBox(
+          height: size.height * 0.64,
+          child: pageBody(chooseDentistSection, chooseTypeSection, orderMdl,
+              verifyAppointment),
+        ),
+        SizedBox(height: 30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            roundedButton(
+                "Back", Colors.white, Colors.blue, size, backBtnHandler),
+            roundedButton(
+              "${_page == 3 ? "Confirm" : "Next"}",
+              Colors.blue,
+              Colors.white,
+              size,
+              _page == 3 ? confirmBtnHandler : nextBtnHandler,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -297,26 +392,30 @@ class _NewAppointmentState extends State<NewAppointment> {
   }
 
   void confirmBtnHandler() {
-    if (_formKey.currentState!.validate()) {
-      ordersData.add(
-        new Order(
-          dId: dId,
-          aId: "a110",
-          consumerName: _fieldController.text,
-          startDate: _selectedDate,
-          endDate: _selectedDate.add(
-            Duration(
-                minutes: chosenTypeName == ""
-                    ? 0
-                    : appointmentTypesData
-                        .firstWhere((element) => element.name == chosenTypeName)
-                        .duration),
-          ),
-          isDone: false,
-          type: chosenTypeName,
-        ),
-      );
+    final orderMdl = Provider.of<OrderProvider>(context, listen: false);
+    final typeMdl = Provider.of<TypesProvider>(context, listen: false);
 
+    if (_formKey.currentState!.validate()) {
+      Order newOrder = new Order(
+        oId: 1,
+        dId: chosenDentistId,
+        consumerName: _fieldController.text,
+        startDate: _selectedDate,
+        endDate: _selectedDate.add(
+          Duration(
+              minutes: chosenTypeName == ""
+                  ? 0
+                  : typeMdl.orderTypesData
+                      .firstWhere(
+                          (element) => element.typeName == chosenTypeName)
+                      .duration),
+        ),
+        isDone: 0,
+        tId: typeMdl.orderTypesData
+            .firstWhere((e) => e.typeName == chosenTypeName)
+            .tId,
+      );
+      orderMdl.addOrder(newOrder, context);
       widget.jumpTo(2);
     }
   }

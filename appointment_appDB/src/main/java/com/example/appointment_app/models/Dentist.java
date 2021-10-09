@@ -4,14 +4,11 @@ public class Dentist {
     public String dId;
     public String firstName;
     public String lastName;
-    public int phoneNumber;
 
-
-    public Dentist(String dId, String firstName, String lastName,int phoneNumber) {
+    public Dentist(String dId, String firstName, String lastName) {
         this.dId = dId;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
     }
 
     public Dentist() {
@@ -27,14 +24,6 @@ public class Dentist {
 
     public String getLastName() {
         return lastName;
-    }
-
-    public int getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(int phoneNumber) {
-        this.phoneNumber = phoneNumber;
     }
 
     public void setLastName(String lastName) {

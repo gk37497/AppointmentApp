@@ -1,9 +1,21 @@
+import 'package:appointment_app/providers/orderProvider.dart';
+import 'package:appointment_app/providers/typeProvider.dart';
 import 'package:appointment_app/screens/home_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'providers/dentistProvider.dart';
 
 void main() {
-  runApp(OnlineDentalClinic());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => DentistProvider()),
+      ChangeNotifierProvider(create: (context) => OrderProvider()),
+      ChangeNotifierProvider(create: (context) => TypesProvider()),
+    ],
+    child: OnlineDentalClinic(),
+  ));
 }
 
 class OnlineDentalClinic extends StatelessWidget {
