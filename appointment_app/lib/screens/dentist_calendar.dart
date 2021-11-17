@@ -1,4 +1,4 @@
-import 'package:appointment_app/models/dentist.dart';
+import 'package:appointment_app/models/employee.dart';
 import 'package:appointment_app/models/meetingDataSource.dart';
 import 'package:appointment_app/untilities/getOrderData.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +6,7 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class DentistCalendar extends StatelessWidget {
   const DentistCalendar(this.dentist, {Key? key}) : super(key: key);
-  final Dentist dentist;
+  final Employee dentist;
   @override
   Widget build(BuildContext context) {
     // final _orderMdl = Provider.of<OrderProvider>(context, listen: false);
@@ -36,8 +36,8 @@ class DentistCalendar extends StatelessWidget {
                   showTrailingAndLeadingDates: false,
                   showAgenda: true,
                 ),
-                dataSource:
-                    MeetingDataSource(getOrderData(dentist.dId, context)),
+                dataSource: MeetingDataSource(
+                    getOrderData(dentist.employeeId, context)),
               ))
             ],
           ),

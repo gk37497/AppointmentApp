@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:appointment_app/widgets/roundedBoxDecoration.dart';
 import 'package:flutter/material.dart';
 
@@ -5,12 +7,12 @@ Container roundedButton(
   String text,
   Color color,
   Color textColor,
-  Size size,
+  double? size,
   onClicked,
 ) {
   return Container(
-    height: size.height * 0.06,
-    width: size.width * 0.5 - 25,
+    height: 40,
+    width: size,
     decoration: roundedBoxDecoration(Colors.blue),
     child: TextButton(
       onPressed: onClicked,

@@ -1,6 +1,6 @@
 package com.example.orderApp.sevice;
 
-import com.example.orderApp.models.Order;
+import com.example.orderApp.entities.Order;
 import com.example.orderApp.repositories.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,22 +30,26 @@ public class OrderService {
         }
     }
 
-    public void deleteData(int oId){
+    public void deleteData(int order_id){
         try{
-            orderRepository.deleteById(oId);
+            orderRepository.deleteById(order_id);
         }
         catch (Exception e){
             throw e;
         }
     }
-    public void updateData(int oId , Order order){
+    public void updateData(int order_id , Order order){
         try{
-            orderRepository.deleteById(oId);
-            order.setoId(oId);
+            orderRepository.deleteById(order_id);
+            order.setOrderId(order_id);
             orderRepository.save(order);
         }
         catch (Exception e){
             throw e;
         }
+    }
+
+    public List<Order> getOrdersByEmpId(int emp_id){
+        return orderRepository.findByEmployeeId(emp_id);
     }
 }

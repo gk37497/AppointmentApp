@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:appointment_app/database/addData.dart';
 import 'package:appointment_app/database/deleteData.dart';
 import 'package:appointment_app/database/getDataFrom.dart';
@@ -13,6 +15,7 @@ class OrderProvider with ChangeNotifier {
   getOrdersData() async {
     loading = true;
     ordersData = await getOrders();
+    print(ordersData[0].consumerName);
     loading = false;
     notifyListeners();
   }
@@ -33,7 +36,7 @@ class OrderProvider with ChangeNotifier {
 
   updateOrder(Order order, BuildContext context) async {
     await updateOrderToDb(order, context);
-    ordersData.removeWhere((element) => element.oId == order.oId);
+    ordersData.removeWhere((element) => element.orderId == order.orderId);
     ordersData.add(order);
     notifyListeners();
   }

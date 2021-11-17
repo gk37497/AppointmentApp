@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 
 String baseUrl = "http://localhost:8080/";
 
-String getDentistsUrl = "getAllDentists";
-String addDentistUrl = "addDentist";
+String orderUrl = "order";
+String hospitalUrl = "hospital";
+String roleUrl = "role";
+String emploeyeeRoleUrl = "employeeRole";
+String employeeUrl = "employee";
+String orderTypeUrl = "type";
 
-String getOrdersUrl = "getAllOrders";
-String addOrderUrl = "addOrders";
-String deleteOrderUrl = "deleteOrder";
+String getAllUrl = "/getAll";
+String addUrl = "/add";
+String deleteUrl = "/delete";
+String updateUrl = "/update";
 
-String getAllTypesUrl = "getAllTypes";
-String addOrderType = "addType";
-
-String loginUrl = "login";
+String loginUrl = "/login";
 
 String todayScreenTitle = "Өнөөдрийн хуваарь";
 String todayScreenStr1 = "Хүлээгдэж буй";

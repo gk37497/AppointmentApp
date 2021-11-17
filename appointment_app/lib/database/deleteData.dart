@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 
 Future deleteOrderFromDb(Order order, BuildContext context) async {
   Dio _dio = new Dio();
-  int orderId = order.oId;
-  var response = await _dio.delete("$baseUrl$deleteOrderUrl/$orderId");
+  int orderId = order.orderId;
+  String url = "$baseUrl$orderUrl";
+
+  var response = await _dio.delete("$url$deleteUrl/$orderId");
 
   if (response.statusCode == 200) {
     showDialog(

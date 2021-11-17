@@ -20,8 +20,8 @@ class OrderType {
 
   factory OrderType.fromMap(Map<String, dynamic> map) {
     return OrderType(
-      tId: map['tId'],
-      typeName: map['typeName'],
+      tId: map['type_id'],
+      typeName: map['type_name'],
       duration: map['duration'],
     );
   }

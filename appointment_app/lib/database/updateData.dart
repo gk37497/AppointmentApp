@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 Future updateOrderToDb(Order currentOrder, BuildContext context) async {
   Dio _dio = new Dio();
-  int orderId = currentOrder.oId;
+  int orderId = currentOrder.orderId;
   var response = await _dio.put("http://localhost:8080/updateOrder/$orderId",
       data: currentOrder.toJson());
 

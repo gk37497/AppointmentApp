@@ -80,7 +80,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                               style: TextStyle(fontWeight: FontWeight.w700)),
                           SizedBox(width: 10),
                           Text(dentistMdl.dentistsData
-                              .firstWhere((e) => e.dId == data[i].dId)
+                              .firstWhere(
+                                  (e) => e.employeeId == data[i].dentist.employeeId)
                               .firstName),
                         ],
                       ),
@@ -90,7 +91,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
                             dateConvert(data[i].endDate) +
                             " (" +
                             typesMdl.orderTypesData
-                                .firstWhere((e) => e.tId == data[i].tId)
+                                .firstWhere(
+                                    (e) => e.tId == data[i].orderType.tId)
                                 .typeName +
                             ")",
                       ),
@@ -119,14 +121,14 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
             allOrderStr1,
             _upcomingBtnClicked ? Colors.blue : Colors.white,
             _upcomingBtnClicked ? Colors.white : Colors.blue,
-            size,
+            size.width * 0.4,
             upcomingBtnHandler,
           ),
           roundedButton(
             allOrderStr2,
             _pastBtnClicked ? Colors.blue : Colors.white,
             _pastBtnClicked ? Colors.white : Colors.blue,
-            size,
+            size.width * 0.4,
             pastBtnHandler,
           ),
         ],

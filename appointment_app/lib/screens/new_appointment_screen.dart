@@ -49,7 +49,7 @@ class _NewAppointmentState extends State<NewAppointment> {
     String _dentistName = (chosenDentistId == 0
         ? " "
         : dentistMdl.dentistsData
-            .firstWhere((element) => element.dId == chosenDentistId)
+            .firstWhere((element) => element.employeeId == chosenDentistId)
             .firstName);
     String _chosenTypeName = chosenTypeName == "" ? " " : chosenTypeName;
     DateTime _endDate = _selectedDate.add(
@@ -83,7 +83,7 @@ class _NewAppointmentState extends State<NewAppointment> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        chosenDentistId = dentistMdl.dentistsData[i].dId;
+                        chosenDentistId = dentistMdl.dentistsData[i].employeeId;
                         setState(() {
                           isDentistClicked =
                               isDentistClicked.map((e) => e = 0).toList();
@@ -339,12 +339,17 @@ class _NewAppointmentState extends State<NewAppointment> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             roundedButton(
-                "Back", Colors.white, Colors.blue, size, backBtnHandler),
+              "Back",
+              Colors.white,
+              Colors.blue,
+              size.width * 0.4,
+              backBtnHandler,
+            ),
             roundedButton(
               "${_page == 3 ? "Confirm" : "Next"}",
               Colors.blue,
               Colors.white,
-              size,
+              size.width * 0.4,
               _page == 3 ? confirmBtnHandler : nextBtnHandler,
             ),
           ],
@@ -395,28 +400,27 @@ class _NewAppointmentState extends State<NewAppointment> {
     final orderMdl = Provider.of<OrderProvider>(context, listen: false);
     final typeMdl = Provider.of<TypesProvider>(context, listen: false);
 
-    if (_formKey.currentState!.validate()) {
-      Order newOrder = new Order(
-        oId: 1,
-        dId: chosenDentistId,
-        consumerName: _fieldController.text,
-        startDate: _selectedDate,
-        endDate: _selectedDate.add(
-          Duration(
-              minutes: chosenTypeName == ""
-                  ? 0
-                  : typeMdl.orderTypesData
-                      .firstWhere(
-                          (element) => element.typeName == chosenTypeName)
-                      .duration),
-        ),
-        isDone: 0,
-        tId: typeMdl.orderTypesData
-            .firstWhere((e) => e.typeName == chosenTypeName)
-            .tId,
-      );
-      orderMdl.addOrder(newOrder, context);
-      widget.jumpTo(2);
-    }
+    // if (_formKey.currentState!.validate()) {
+    //   Order newOrder = new Order(
+    //     orderId: 1,
+    //     consumerName: _fieldController.text,
+    //     startDate: _selectedDate,
+    //     endDate: _selectedDate.add(
+    //       Duration(
+    //           minutes: chosenTypeName == ""
+    //               ? 0
+    //               : typeMdl.orderTypesData
+    //                   .firstWhere(
+    //                       (element) => element.typeName == chosenTypeName)
+    //                   .duration),
+    //     ),
+    //     isDone: 0,
+    //     tId: typeMdl.orderTypesData
+    //         .firstWhere((e) => e.typeName == chosenTypeName)
+    //         .tId,
+    //   );
+    //   orderMdl.addOrder(newOrder, context);
+    //   widget.jumpTo(2);
+    // }
   }
 }

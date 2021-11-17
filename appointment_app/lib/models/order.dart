@@ -1,46 +1,55 @@
 import 'dart:convert';
 
+import 'package:appointment_app/models/employee.dart';
+import 'package:appointment_app/models/type.dart';
+
 class Order {
-  int oId;
-  int dId;
-  int tId;
+  int orderId;
   String consumerName;
+  String consumerAddress;
+  int consumerPhoneNumber;
   DateTime startDate;
   DateTime endDate;
   int isDone;
+  Employee dentist;
+  OrderType orderType;
 
   Order({
-    required this.dId,
-    required this.oId,
-    required this.tId,
+    required this.orderId,
     required this.consumerName,
+    required this.consumerAddress,
+    required this.consumerPhoneNumber,
     required this.startDate,
     required this.endDate,
     required this.isDone,
+    required this.dentist,
+    required this.orderType,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      'oId': oId,
-      'dId': dId,
-      'tId': tId,
+      'orderId': orderId,
       'consumerName': consumerName,
+      'consumerAddress': consumerAddress,
+      'consumerPhoneNumber': consumerPhoneNumber,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
       'isDone': isDone,
+      'dentist': dentist.toMap(),
     };
   }
 
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
-      oId: map['oId'],
-      dId: map['dId'],
-      tId: map['tId'],
-      consumerName: map['consumerName'],
-      startDate: DateTime.parse(map['startDate']),
-      endDate: DateTime.parse(map['endDate']),
-      isDone: map['isDone'],
-    );
+        orderId: map['orderId'],
+        consumerName: map['consumerName'],
+        consumerAddress: map['consumerAddress'],
+        consumerPhoneNumber: map['consumerPhoneNumber'],
+        startDate: DateTime.parse(map['startDate']),
+        endDate: DateTime.parse(map['endDate']),
+        isDone: map['isDone'],
+        dentist: Employee.fromMap(map['employee']),
+        orderType: OrderType.fromMap(map['orderType']));
   }
 
   String toJson() => json.encode(toMap());

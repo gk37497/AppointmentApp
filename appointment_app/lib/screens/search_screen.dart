@@ -20,17 +20,17 @@ class AppointmentSearch extends SearchDelegate<Order> {
   Widget buildLeading(BuildContext context) {
     return IconButton(
       onPressed: () {
-        close(
-          context,
-          Order(
-              dId: 0,
-              oId: 11,
-              consumerName: "",
-              startDate: DateTime.now(),
-              endDate: DateTime.now(),
-              isDone: 0,
-              tId: 23),
-        );
+        // close(
+        //   context,
+        //   Order(
+        //       dentist_id: 0,
+        //       orderId: 11,
+        //       consumerName: "",
+        //       startDate: DateTime.now(),
+        //       endDate: DateTime.now(),
+        //       isDone: 0,
+        //       tId: 23),
+        // );
       },
       icon: AnimatedIcon(
         icon: AnimatedIcons.menu_arrow,
@@ -86,7 +86,7 @@ Container searchBody(Size size, List<Order> data) {
                   "-" +
                   DateFormat('HH.mm').format(data[i].endDate) +
                   " (" +
-                  data[i].tId.toString() +
+                  data[i].orderType.tId.toString() +
                   ")",
             ),
             dense: true,

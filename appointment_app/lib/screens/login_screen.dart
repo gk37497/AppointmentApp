@@ -131,14 +131,19 @@ class _LoginPageState extends State<LoginPage> {
     String password = _passwordController.text;
 
     print(username + " " + password + " ");
-    var res = await http.post(Uri.parse("$baseUrl$loginUrl"),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'username': username, 'password': password}));
+
+    var res = await http.post(
+      Uri.parse("$baseUrl$employeeUrl$loginUrl"),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(
+        {'username': username, 'password': password},
+      ),
+    );
 
     print(res.statusCode);
     if (res.statusCode == 200) {
       if (res.body.isNotEmpty) {
-        print(User.fromJson(res.body).userId);
+        print(res.body.toString());
         widget.isUser();
       } else {
         print("User not found");
@@ -146,9 +151,5 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       throw Exception("Errrrrooor???");
     }
-
-    // User user = User.fromMap(json.decode(res.data));
-
-    // print(user.userId.toString());
   }
 }

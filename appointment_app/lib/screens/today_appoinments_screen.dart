@@ -68,7 +68,7 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
                           Text(data[i].consumerName,
                               style: TextStyle(fontWeight: FontWeight.w700)),
                           SizedBox(width: 10),
-                          Text(getDentistName(data[i].dId)),
+                          Text(getDentistName(data[i].dentist.employeeId)),
                         ],
                       ),
                       subtitle: Text(
@@ -76,7 +76,7 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
                             " - " +
                             DateFormat('HH.mm').format(data[i].endDate) +
                             " (" +
-                            data[i].tId.toString() +
+                            data[i].orderType.tId.toString() +
                             ")",
                       ),
                       dense: true,
@@ -109,14 +109,14 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
             todayScreenStr1,
             _pendingBtnClicked ? Colors.blue : Colors.white,
             _pendingBtnClicked ? Colors.white : Colors.blue,
-            size,
+            size.width * 0.4,
             pendingBtnHandler,
           ),
           roundedButton(
             todayScreenStr2,
             _finishedBtnClicked ? Colors.blue : Colors.white,
             _finishedBtnClicked ? Colors.white : Colors.blue,
-            size,
+            size.width * 0.4,
             finishedBtnHandler,
           ),
         ],
@@ -165,7 +165,7 @@ class _TodayAppointmentsState extends State<TodayAppointments> {
   String getDentistName(int dId) {
     final dentistMdl = Provider.of<DentistProvider>(context);
     return dentistMdl.dentistsData
-        .firstWhere((element) => element.dId == dId)
+        .firstWhere((element) => element.employeeId == dId)
         .firstName;
   }
 

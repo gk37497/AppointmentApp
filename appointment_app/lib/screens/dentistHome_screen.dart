@@ -89,8 +89,9 @@ class _DentistHomeScreenState extends State<DentistHomeScreen> {
   Container listItem(Order order) {
     final typeMdl = Provider.of<TypesProvider>(context);
     print(typeMdl.orderTypesData.map((e) => e.typeName));
-    String _typeName =
-        typeMdl.orderTypesData.firstWhere((e) => e.tId == order.tId).typeName;
+    String _typeName = typeMdl.orderTypesData
+        .firstWhere((e) => e.tId == order.orderType.tId)
+        .typeName;
     TypeDetials _typeDetial =
         orderTypeDetials.firstWhere((element) => element.name == _typeName);
 

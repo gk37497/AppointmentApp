@@ -35,12 +35,13 @@ class _EditAppointmentState extends State<EditAppointment> {
     super.initState();
     typeMdl.getTypesData();
     _dentistDropdownInitialValue = dentistMdl.dentistsData
-        .firstWhere((element) => element.dId == widget.order.dId)
+        .firstWhere(
+            (element) => element.employeeId == widget.order.dentist.employeeId)
         .firstName;
     _typeDropdownInitialValue = typeMdl.orderTypesData
-        .firstWhere((element) => element.tId == widget.order.tId)
+        .firstWhere((element) => element.tId == widget.order.orderType.tId)
         .typeName;
-    _dId = widget.order.dId;
+    _dId = widget.order.dentist.employeeId;
   }
 
   @override
@@ -99,7 +100,7 @@ class _EditAppointmentState extends State<EditAppointment> {
                               .firstWhere((element) =>
                                   element.firstName ==
                                   _dentistDropdownInitialValue)
-                              .dId;
+                              .employeeId;
                         });
                         print(_dId);
                       },
@@ -143,38 +144,38 @@ class _EditAppointmentState extends State<EditAppointment> {
                     "Close",
                     Colors.white,
                     Colors.blue,
-                    size,
+                    80,
                     closeBtnHandler,
                   ),
                   roundedButton(
                     "Edit",
                     Colors.blue,
                     Colors.white,
-                    size,
+                    80,
                     () {
-                      Order editingOrder = new Order(
-                        dId: _dId,
-                        oId: widget.order.oId,
-                        tId: typeMdl.orderTypesData
-                            .firstWhere(
-                                (e) => e.typeName == _typeDropdownInitialValue)
-                            .tId,
-                        consumerName: widget.order.consumerName,
-                        startDate: _selectedDate,
-                        endDate: _selectedDate.add(
-                          Duration(
-                              minutes: _typeDropdownInitialValue == ""
-                                  ? 0
-                                  : typeMdl.orderTypesData
-                                      .firstWhere((element) =>
-                                          element.typeName ==
-                                          _typeDropdownInitialValue)
-                                      .duration),
-                        ),
-                        isDone: 0,
-                      );
-                      print(editingOrder.toJson());
-                      orderMdl.updateOrder(editingOrder, context);
+                      // Order editingOrder = new Order(
+                      //   dentist_id: _dId,
+                      //   orderId: widget.order.orderId,
+                      //   tId: typeMdl.orderTypesData
+                      //       .firstWhere(
+                      //           (e) => e.typeName == _typeDropdownInitialValue)
+                      //       .tId,
+                      //   consumerName: widget.order.consumerName,
+                      //   startDate: _selectedDate,
+                      //   endDate: _selectedDate.add(
+                      //     Duration(
+                      //         minutes: _typeDropdownInitialValue == ""
+                      //             ? 0
+                      //             : typeMdl.orderTypesData
+                      //                 .firstWhere((element) =>
+                      //                     element.typeName ==
+                      //                     _typeDropdownInitialValue)
+                      //                 .duration),
+                      //   ),
+                      //   isDone: 0,
+                      // );
+                      // print(editingOrder.toJson());
+                      // orderMdl.updateOrder(editingOrder, context);
                       Navigator.pop(context);
                     },
                   ),
